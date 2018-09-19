@@ -49,6 +49,31 @@ public class MainActivity extends AppCompatActivity {
         public void onAnimationRepeat(Animator animator) {}
     }
 
+    private class ScaleAnimationListener implements Animator.AnimatorListener {
+        private final View view;
+        private final float scale;
+
+        ScaleAnimationListener(View view, float scale) {
+            this.view = view;
+            this.scale = scale;
+        }
+
+        @Override
+        public void onAnimationStart(Animator animator) {}
+
+        @Override
+        public void onAnimationEnd(Animator animator) {
+            view.setScaleX(scale);
+            view.setScaleY(scale);
+        }
+
+        @Override
+        public void onAnimationCancel(Animator animator) {}
+
+        @Override
+        public void onAnimationRepeat(Animator animator) {}
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,12 +92,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 int expandedHeight = expandedRecycler.getMeasuredHeight();
-                int expandedWidth = expandedRecycler.getMeasuredWidth();
                 int collapsedHeight = collapsedRecylcler.getMeasuredHeight();
                 int collapsedWidth = collapsedRecylcler.getMeasuredWidth();
 
-                float expandFactor = expandedHeight / (float) collapsedHeight;
-                float collapseFactor = collapsedHeight / (float) expandedHeight;
+                final float expandFactor = expandedHeight / (float) collapsedHeight;
 
                 if (!isExpanded) {
                     collapsedRecylcler.setPivotX(collapsedWidth/2f);
@@ -85,6 +108,8 @@ public class MainActivity extends AppCompatActivity {
 
                         @Override
                         public void onAnimationEnd(Animator animator) {
+                            collapsedRecylcler.setScaleX(expandFactor);
+                            collapsedRecylcler.setScaleY(expandFactor);
                             collapsedRecylcler.animate().alpha(0f).setDuration(DURATION).setListener(new AlphaAnimationListener(collapsedRecylcler, 0f));
                             expandedRecycler.animate().alpha(1f).setDuration(DURATION).setListener(new AlphaAnimationListener(expandedRecycler, 1f));
                         }
@@ -96,18 +121,17 @@ public class MainActivity extends AppCompatActivity {
                         public void onAnimationRepeat(Animator animator) {}
                     });
                 } else {
-                    expandedRecycler.setPivotX(expandedWidth/2f);
-                    expandedRecycler.setPivotY(expandedHeight);
-                    collapsedRecylcler.setScaleX(1f);
-                    collapsedRecylcler.setScaleY(1f);
-                    expandedRecycler.animate().scaleX(collapseFactor).scaleY(collapseFactor).setDuration(DURATION).setListener(new Animator.AnimatorListener() {
+                    collapsedRecylcler.setScaleX(expandFactor);
+                    collapsedRecylcler.setScaleY(expandFactor);
+                    expandedRecycler.animate().alpha(0f).setDuration(DURATION).setListener(new AlphaAnimationListener(expandedRecycler, 0f));
+                    collapsedRecylcler.animate().alpha(1f).setDuration(DURATION).setListener(new Animator.AnimatorListener() {
                         @Override
-                        public void onAnimationStart(Animator animator) { }
+                        public void onAnimationStart(Animator animator) {}
 
                         @Override
                         public void onAnimationEnd(Animator animator) {
-                            expandedRecycler.animate().alpha(0).setDuration(DURATION).setListener(new AlphaAnimationListener(expandedRecycler, 0f));
-                            collapsedRecylcler.animate().alpha(1f).setDuration(DURATION).setListener(new AlphaAnimationListener(collapsedRecylcler, 1f));
+                            collapsedRecylcler.setAlpha(1f);
+                            collapsedRecylcler.animate().scaleY(1f).scaleX(1f).setDuration(DURATION).setListener(new ScaleAnimationListener(collapsedRecylcler, 1f));
                         }
 
                         @Override
